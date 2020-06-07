@@ -49,17 +49,14 @@ end
 
 get '/auth/spotify/callback' do
   session[:spotify] = request.env['omniauth.auth']
-  # @spotify_user = RSpotify::User.new(request.env['omniauth.auth'])
-
-  # puts @spotify_user.inspect
-
   erb :index
 end
 
 post "/add_to_playlist" do
+  @spotify_user = RSpotify::User.new(session[:spotify])
+  add_to_playlist(params[:selected_songs], params[:playlist_name])
 
-  # playlist = @spotify_user.create_playlist!('my-awesome-playlist')
-
+  erb :success
 end
 
 def find_tracks_spotify(parsed_playlist)
@@ -67,13 +64,11 @@ def find_tracks_spotify(parsed_playlist)
 
   parsed_playlist['content'].each do |track|
     if track['song'] != "" && track['artist'] != ""
-      search_result = RSpotify::Track.search("#{track['song']} #{track['artist']}", limit: 20)
-
-
+      search_result = RSpotify::Track.search("#{track['song'].sub(/\([^)]*\)/, "").strip} #{track['artist']}", limit: 10)
       search_result.each do |song|
         # puts("#{song.name.inspect} - #{song.album.name}- #{song.preview_url}" )
         song.artists.each do |artist|
-          if artist.name == track['artist'] && song.name.strip == track['song'].strip
+          if (artist.name.downcase.strip.include?(track['artist'].downcase.strip) || track['artist'].downcase.strip.include?(artist.name.downcase.strip))
             sng = Hash.new
             sng['song'] = song
             sng['name'] = song.name
@@ -88,18 +83,9 @@ def find_tracks_spotify(parsed_playlist)
   songs
 end
 
-def add_to_playlist(parsed_playlist)
-  # playlist = @spotify_user.create_playlist!('my-awesome-playlist')
-
-  parsed_playlist.each do |track|
-    song = RSpotify::Track.search(track['song'] + " " + track['artist'])
-
-    song.each do |sng|
-      sng.artists.each do |artist|
-        if artist.name == track['artist']
-          puts("#{artist.name} - #{sng.name}")
-        end
-      end
-    end
-  end
+def add_to_playlist(tracks, playlist_name)
+  playlist = @spotify_user.create_playlist!(playlist_name)
+  list = Array.new
+  tracks.map { |key, value| list << RSpotify::Track.find(value)}
+  playlist.add_tracks!(list)
 end
