@@ -58,7 +58,7 @@ GEM
     i18n (1.8.3)
       concurrent-ruby (~> 1.0)
     jwt (2.2.1)
-    loofah (2.5.0)
+    loofah (2.19.1)
       crass (~> 1.0.2)
       nokogiri (>= 1.5.9)
     method_source (1.0.0)
@@ -90,7 +90,7 @@ GEM
       omniauth (~> 1.2)
     popper_js (1.16.0)
     public_suffix (3.1.1)
-    racc (1.6.0)
+    racc (1.6.1)
     rack (2.2.2)
     rack-protection (2.0.8.1)
       rack
